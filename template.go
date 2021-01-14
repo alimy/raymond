@@ -2,6 +2,7 @@ package raymond
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"reflect"
 	"runtime"
@@ -53,6 +54,16 @@ func MustParse(source string) *Template {
 // ParseFile reads given file and returns parsed template.
 func ParseFile(filePath string) (*Template, error) {
 	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return Parse(string(b))
+}
+
+// ParseWith reads given file in fs.FS and returns parsed template.
+func ParseWith(fsys fs.FS, filePath string) (*Template, error) {
+	b, err := fs.ReadFile(fsys, filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +188,36 @@ func (tpl *Template) RegisterPartialFiles(filePaths ...string) error {
 		name := fileBase(filePath)
 
 		if err := tpl.RegisterPartialFile(filePath, name); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// RegisterPartialWith reads given file in fs.FS and registers its content as a partial with given name.
+func (tpl *Template) RegisterPartialWith(fsys fs.FS, filePath string, name string) error {
+	b, err := fs.ReadFile(fsys, filePath)
+	if err != nil {
+		return err
+	}
+
+	tpl.RegisterPartial(name, string(b))
+
+	return nil
+}
+
+// RegisterPartialFS reads several files in fs.FS and registers them as partials, the filename base is used as the partial name.
+func (tpl *Template) RegisterPartialFS(fsys fs.FS, patterns ...string) error {
+	filenames, err := fileGlob(fsys, patterns...)
+	if err != nil {
+		return err
+	}
+
+	for _, filePath := range filenames {
+		name := partialName(filePath)
+
+		if err = tpl.RegisterPartialWith(fsys, filePath, name); err != nil {
 			return err
 		}
 	}

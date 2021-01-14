@@ -1,8 +1,11 @@
 package raymond
 
 import (
+	"fmt"
+	"io/fs"
 	"path"
 	"reflect"
+	"strings"
 )
 
 // indirect returns the item at the end of indirection, and a bool to indicate if it's nil.
@@ -82,4 +85,27 @@ func fileBase(filePath string) string {
 	fileExt := path.Ext(filePath)
 
 	return fileName[:len(fileName)-len(fileExt)]
+}
+
+// partialName returns full base file name without file ext
+//
+// example: /foo/bar/baz.png => foo/bar/baz
+func partialName(filePath string) string {
+	fileExt := path.Ext(filePath)
+	return strings.TrimLeft(filePath[:len(filePath)-len(fileExt)], "/")
+}
+
+func fileGlob(fsys fs.FS, patterns ...string) ([]string, error) {
+	var filenames []string
+	for _, pattern := range patterns {
+		list, err := fs.Glob(fsys, pattern)
+		if err != nil {
+			return nil, err
+		}
+		if len(list) == 0 {
+			return nil, fmt.Errorf("template: pattern matches no files: %#q", pattern)
+		}
+		filenames = append(filenames, list...)
+	}
+	return filenames, nil
 }

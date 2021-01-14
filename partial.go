@@ -2,6 +2,7 @@ package raymond
 
 import (
 	"fmt"
+	"io/fs"
 	"sync"
 )
 
@@ -48,6 +49,36 @@ func RegisterPartials(partials map[string]string) {
 	for name, p := range partials {
 		RegisterPartial(name, p)
 	}
+}
+
+// RegisterPartialWith reads given file in fs.FS and registers its content as a partial with given name.
+func RegisterPartialWith(fsys fs.FS, filePath string, name string) error {
+	b, err := fs.ReadFile(fsys, filePath)
+	if err != nil {
+		return err
+	}
+
+	RegisterPartial(name, string(b))
+
+	return nil
+}
+
+// RegisterPartialFS reads several files in fs.FS and registers them as partials, the filename base is used as the partial name.
+func RegisterPartialFS(fsys fs.FS, patterns ...string) error {
+	filenames, err := fileGlob(fsys, patterns...)
+	if err != nil {
+		return err
+	}
+
+	for _, filePath := range filenames {
+		name := partialName(filePath)
+
+		if err = RegisterPartialWith(fsys, filePath, name); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // RegisterPartialTemplate registers a global partial with given parsed template. That partial will be available to all templates.
