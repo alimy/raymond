@@ -71,7 +71,7 @@ func RegisterPartialFS(fsys fs.FS, patterns ...string) error {
 	}
 
 	for _, filePath := range filenames {
-		name := partialName(filePath)
+		name := namer.Naming(filePath)
 
 		if err = RegisterPartialWith(fsys, filePath, name); err != nil {
 			return err

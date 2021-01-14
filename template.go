@@ -185,7 +185,7 @@ func (tpl *Template) RegisterPartialFiles(filePaths ...string) error {
 	}
 
 	for _, filePath := range filePaths {
-		name := fileBase(filePath)
+		name := namer.Naming(filePath)
 
 		if err := tpl.RegisterPartialFile(filePath, name); err != nil {
 			return err
@@ -215,7 +215,7 @@ func (tpl *Template) RegisterPartialFS(fsys fs.FS, patterns ...string) error {
 	}
 
 	for _, filePath := range filenames {
-		name := partialName(filePath)
+		name := namer.Naming(filePath)
 
 		if err = tpl.RegisterPartialWith(fsys, filePath, name); err != nil {
 			return err

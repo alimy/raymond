@@ -3,9 +3,7 @@ package raymond
 import (
 	"fmt"
 	"io/fs"
-	"path"
 	"reflect"
-	"strings"
 )
 
 // indirect returns the item at the end of indirection, and a bool to indicate if it's nil.
@@ -75,24 +73,6 @@ func canBeNil(typ reflect.Type) bool {
 		return true
 	}
 	return false
-}
-
-// fileBase returns base file name
-//
-// example: /foo/bar/baz.png => baz
-func fileBase(filePath string) string {
-	fileName := path.Base(filePath)
-	fileExt := path.Ext(filePath)
-
-	return fileName[:len(fileName)-len(fileExt)]
-}
-
-// partialName returns full base file name without file ext
-//
-// example: /foo/bar/baz.png => foo/bar/baz
-func partialName(filePath string) string {
-	fileExt := path.Ext(filePath)
-	return strings.TrimLeft(filePath[:len(filePath)-len(fileExt)], "/")
 }
 
 func fileGlob(fsys fs.FS, patterns ...string) ([]string, error) {
