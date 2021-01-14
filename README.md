@@ -1357,8 +1357,8 @@ package main
 import (
     "fmt"
 
-    "github.com/aymerick/raymond/ast"
-    "github.com/aymerick/raymond/parser"
+    "github.com/aymerick/raymond/v2/ast"
+    "github.com/aymerick/raymond/v2/parser"
 )
 
 fu  nc main() {
